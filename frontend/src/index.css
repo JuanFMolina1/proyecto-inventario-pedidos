@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #27324b;
+  background: #f5f7fb;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
