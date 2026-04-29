@@ -2,12 +2,9 @@ import { useState } from 'react'
 import styles from '../../styles/Form.module.css'
 
 const estadoInicial = {
-  numeroCliente: '',
-  nombre: '',
   saldo: '',
   limiteCredito: '',
   descuento: '',
-  direccionesTexto: '',
 }
 
 function ClienteForm({ onCrear, creando }) {
@@ -28,18 +25,10 @@ function ClienteForm({ onCrear, creando }) {
       return
     }
 
-    const direcciones = formulario.direccionesTexto
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean)
-
     await onCrear({
-      numeroCliente: formulario.numeroCliente.trim(),
-      nombre: formulario.nombre.trim(),
       saldo: Number(formulario.saldo),
       limiteCredito: Number(formulario.limiteCredito),
       descuento: Number(formulario.descuento),
-      direcciones,
     })
 
     setFormulario(estadoInicial)
@@ -49,14 +38,6 @@ function ClienteForm({ onCrear, creando }) {
     <form className={styles.card} onSubmit={manejarSubmit}>
       <h3>Crear Cliente</h3>
       <div className={styles.grid2}>
-        <label>
-          Numero cliente
-          <input name="numeroCliente" value={formulario.numeroCliente} onChange={actualizarCampo} required />
-        </label>
-        <label>
-          Nombre
-          <input name="nombre" value={formulario.nombre} onChange={actualizarCampo} required />
-        </label>
         <label>
           Saldo
           <input name="saldo" type="number" value={formulario.saldo} onChange={actualizarCampo} required />
@@ -74,10 +55,6 @@ function ClienteForm({ onCrear, creando }) {
         <label>
           Descuento (%)
           <input name="descuento" type="number" value={formulario.descuento} onChange={actualizarCampo} required />
-        </label>
-        <label>
-          Direcciones (separadas por coma)
-          <input name="direccionesTexto" value={formulario.direccionesTexto} onChange={actualizarCampo} />
         </label>
       </div>
       {error ? <p className={styles.error}>{error}</p> : null}

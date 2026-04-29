@@ -1,5 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
+import 'dotenv/config';
 import clienteRoutes from './src/routes/cliente.routes';
 import articuloRoutes from './src/routes/articulo.routes';
 import fabricaRoutes from './src/routes/fabrica.routes';

@@ -18,7 +18,7 @@ function Pedidos() {
   const [mensaje, setMensaje] = useState('')
 
   const [clienteId, setClienteId] = useState('')
-  const [direccion, setDireccion] = useState('')
+  const [direccionId, setDireccionId] = useState('')
   const [articuloId, setArticuloId] = useState('')
   const [cantidad, setCantidad] = useState(1)
   const [items, setItems] = useState([])
@@ -33,12 +33,12 @@ function Pedidos() {
     async function cargarDirecciones() {
       if (!clienteId) {
         setDirecciones([])
-        setDireccion('')
+        setDireccionId('')
         return
       }
       const data = await getDireccionesPorCliente(clienteId)
       setDirecciones(data)
-      setDireccion(data[0] ?? '')
+      setDireccionId(data[0]?.id ? String(data[0].id) : '')
     }
 
     cargarDirecciones()
@@ -48,13 +48,19 @@ function Pedidos() {
     try {
       setLoading(true)
       setError('')
+      console.log('[Pedidos] Cargando clientes y artículos...')
+      
       const [clientesData, articulosData] = await Promise.all([
         getClientes(),
         getArticulos(),
       ])
+      
+      console.log('[Pedidos] Datos cargados:', { clientesData, articulosData })
+      
       setClientes(clientesData)
       setArticulos(articulosData)
     } catch (err) {
+      console.error('[Pedidos] Error cargando datos:', err)
       setError(err.message || 'No fue posible cargar los datos de pedido.')
     } finally {
       setLoading(false)
@@ -62,9 +68,35 @@ function Pedidos() {
   }
 
   function agregarArticulo() {
-    const articulo = articulos.find((item) => item.id === articuloId)
-    if (!articulo || Number(cantidad) <= 0) {
-      setError('Selecciona un articulo valido y una cantidad mayor a cero.')
+    console.log('[Pedidos] Intentando agregar artículo:', { articuloId, cantidad, articulos })
+    
+    // Validar que hay artículos cargados
+    if (!articulos || articulos.length === 0) {
+      setError('No hay artículos disponibles. Carga los datos primero.')
+      return
+    }
+    
+    // Validar que se seleccionó un artículo
+    if (!articuloId) {
+      setError('Selecciona un artículo de la lista.')
+      return
+    }
+    
+    // Validar cantidad
+    if (Number(cantidad) <= 0) {
+      setError('La cantidad debe ser mayor a cero.')
+      return
+    }
+
+    // Convertir a número para comparación correcta
+    const articuloIdNum = Number(articuloId)
+    console.log('[Pedidos] Buscando artículo con id:', articuloIdNum)
+    
+    const articulo = articulos.find((item) => item.id === articuloIdNum)
+    console.log('[Pedidos] Artículo encontrado:', articulo)
+    
+    if (!articulo) {
+      setError('El artículo seleccionado no existe en la lista.')
       return
     }
 
@@ -89,7 +121,7 @@ function Pedidos() {
   }
 
   async function crearPedidoActual() {
-    if (!clienteId || !direccion || items.length === 0) {
+    if (!clienteId || !direccionId || items.length === 0) {
       setError('Completa cliente, direccion y al menos un articulo en el carrito.')
       return
     }
@@ -99,14 +131,14 @@ function Pedidos() {
       setMensaje('')
       const nuevoPedido = await createPedido({
         clienteId,
-        direccion,
+        direccionId,
         fecha: fechaActual,
         items,
       })
       setMensaje(`Pedido ${nuevoPedido.id} creado correctamente.`)
       setItems([])
       setClienteId('')
-      setDireccion('')
+      setDireccionId('')
     } catch (err) {
       setError(err.message || 'No fue posible crear el pedido.')
     }
@@ -135,11 +167,15 @@ function Pedidos() {
 
           <label>
             Direccion
-            <select value={direccion} onChange={(e) => setDireccion(e.target.value)} disabled={!clienteId}>
+            <select
+              value={direccionId}
+              onChange={(e) => setDireccionId(e.target.value)}
+              disabled={!clienteId}
+            >
               <option value="">Selecciona direccion</option>
               {direcciones.map((item) => (
-                <option key={item} value={item}>
-                  {item}
+                <option key={item.id} value={item.id}>
+                  {item.texto}
                 </option>
               ))}
             </select>

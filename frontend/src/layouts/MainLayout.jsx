@@ -6,6 +6,7 @@ const links = [
   { to: '/clientes', label: 'Clientes' },
   { to: '/articulos', label: 'Articulos' },
   { to: '/fabricas', label: 'Fabricas' },
+  { to: '/direcciones', label: 'Direcciones' },
   { to: '/pedidos', label: 'Pedidos' },
 ]
 
@@ -15,6 +16,7 @@ const titulosPorRuta = {
   '/clientes': 'Gestion de clientes',
   '/articulos': 'Gestion de articulos',
   '/fabricas': 'Gestion de fabricas',
+  '/direcciones': 'Gestion de direcciones',
   '/pedidos': 'Gestion de pedidos',
 }
 

@@ -5,6 +5,7 @@ import Clientes from '../pages/Clientes'
 import Pedidos from '../pages/Pedidos'
 import Articulos from '../pages/Articulos'
 import Fabricas from '../pages/Fabricas'
+import Direcciones from '../pages/Direcciones'
 
 function AppRouter() {
   return (
@@ -16,6 +17,7 @@ function AppRouter() {
         <Route path="articulos" element={<Articulos />} />
         <Route path="fabricas" element={<Fabricas />} />
         <Route path="pedidos" element={<Pedidos />} />
+        <Route path="direcciones" element={<Direcciones />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
