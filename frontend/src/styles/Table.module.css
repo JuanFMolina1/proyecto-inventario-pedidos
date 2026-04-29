@@ -1,0 +1,42 @@
+.wrapper {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e3e8f5;
+  border-radius: 14px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #edf1fb;
+  text-align: left;
+}
+
+.table th {
+  background: #f6f8fe;
+  color: #324264;
+  font-size: 0.9rem;
+}
+
+.table td {
+  color: #2c3650;
+}
+
+.empty {
+  margin: 6px 0;
+  color: #63708e;
+}
+
+.dangerBtn {
+  background: #d14343;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}

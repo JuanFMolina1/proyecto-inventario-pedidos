@@ -1,0 +1,48 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageHeader p {
+  margin: 0;
+  color: #5b6478;
+}
+
+.primaryBtn {
+  background: #2f59d8;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primaryBtn:hover {
+  background: #2549b0;
+}
+
+.error {
+  margin: 0;
+  color: #b22222;
+  font-weight: 500;
+}
+
+.success {
+  margin: 0;
+  color: #1e7f4b;
+  font-weight: 500;
+}
+
+.muted {
+  margin: 0;
+  color: #64708a;
+}

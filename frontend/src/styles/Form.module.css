@@ -1,0 +1,73 @@
+.card {
+  background: #fff;
+  border: 1px solid #e3e8f5;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(32, 46, 87, 0.05);
+}
+
+.card h3 {
+  margin: 0 0 12px;
+  color: #24314f;
+}
+
+.grid2,
+.grid3 {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #435070;
+}
+
+input,
+select {
+  border: 1px solid #cad3ea;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.95rem;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2f59d8;
+}
+
+.primaryBtn {
+  background: #2f59d8;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.error {
+  margin: 0 0 8px;
+  color: #b22222;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 920px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
