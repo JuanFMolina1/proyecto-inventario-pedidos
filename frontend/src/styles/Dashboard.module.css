@@ -79,6 +79,86 @@
   min-height: 260px;
 }
 
+/* Card for pedidos list */
+.card {
+  background: #fff;
+  border: 1px solid #e4e9f8;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.card h3 {
+  margin: 0 0 12px;
+  color: #21345c;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e4e9f8;
+}
+
+.table th {
+  background: #f8f9fc;
+  color: #35456c;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.table td {
+  color: #21345c;
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: #6b7a99;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e4e9f8;
+}
+
+.pageBtn {
+  padding: 8px 16px;
+  border: 1px solid #d9e0f3;
+  border-radius: 8px;
+  background: #fff;
+  color: #35456c;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #f0f4ff;
+  border-color: #7867ff;
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .chartAreaPie {
   width: 100%;
   min-height: 260px;

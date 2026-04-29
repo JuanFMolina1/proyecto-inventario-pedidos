@@ -4,7 +4,7 @@ import BurbujaVozIA from '../components/dashboard/BurbujaVozIA'
 import OrdersByDayChart from '../components/dashboard/OrdersByDayChart'
 import TopProductsChart from '../components/dashboard/TopProductsChart'
 import TopClientsChart from '../components/dashboard/TopClientsChart'
-import StockByFactoryChart from '../components/dashboard/StockByFactoryChart'
+import { getPedidos } from '../services/api'
 
 const metricas = [
   { etiqueta: 'Pedidos hoy', valor: '128', variacion: '+18%' },
@@ -13,12 +13,17 @@ const metricas = [
   { etiqueta: 'Fabricas en linea', valor: '15', variacion: '+2%' },
 ]
 
+const PEDIDOS_POR_PAGINA = 10
+
 function Dashboard() {
   const [rangoFechas, setRangoFechas] = useState({
     desde: '2026-04-20',
     hasta: '2026-04-28',
   })
   const [refreshTick, setRefreshTick] = useState(0)
+  const [pedidos, setPedidos] = useState([])
+  const [loadingPedidos, setLoadingPedidos] = useState(true)
+  const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -27,6 +32,34 @@ function Dashboard() {
 
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    cargarPedidos()
+  }, [refreshTick])
+
+  async function cargarPedidos() {
+    try {
+      setLoadingPedidos(true)
+      const data = await getPedidos()
+      setPedidos(data)
+    } catch (err) {
+      console.error('Error cargando pedidos:', err)
+    } finally {
+      setLoadingPedidos(false)
+    }
+  }
+
+  const totalPaginas = Math.ceil(pedidos.length / PEDIDOS_POR_PAGINA)
+  const pedidosPaginados = pedidos.slice(
+    (paginaActual - 1) * PEDIDOS_POR_PAGINA,
+    paginaActual * PEDIDOS_POR_PAGINA
+  )
+
+  function cambiarPagina(nuevaPagina) {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaActual(nuevaPagina)
+    }
+  }
 
   return (
     <section className={styles.dashboard}>
@@ -77,7 +110,60 @@ function Dashboard() {
         <OrdersByDayChart rangoFechas={rangoFechas} refreshTick={refreshTick} />
         <TopProductsChart rangoFechas={rangoFechas} refreshTick={refreshTick} />
         <TopClientsChart rangoFechas={rangoFechas} refreshTick={refreshTick} />
-        <StockByFactoryChart refreshTick={refreshTick} />
+      </div>
+
+      {/* Listado de Pedidos Paginado */}
+      <div className={styles.card}>
+        <h3>Listado de Pedidos</h3>
+        {loadingPedidos ? (
+          <p className={styles.muted}>Cargando pedidos...</p>
+        ) : pedidos.length === 0 ? (
+          <p className={styles.muted}>No hay pedidos registrados.</p>
+        ) : (
+          <>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Dirección</th>
+                  <th>Fecha</th>
+                  <th>Items</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pedidosPaginados.map((pedido) => (
+                  <tr key={pedido.id}>
+                    <td>#{pedido.id}</td>
+                    <td>Cliente {pedido.clienteId}</td>
+                    <td>Dirección {pedido.direccionId}</td>
+                    <td>{pedido.fecha}</td>
+                    <td>{pedido.detalles?.length || 0} items</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {/* Paginación */}
+            <div className={styles.pagination}>
+              <button 
+                onClick={() => cambiarPagina(paginaActual - 1)} 
+                disabled={paginaActual === 1}
+                className={styles.pageBtn}
+              >
+                Anterior
+              </button>
+              <span>Página {paginaActual} de {totalPaginas}</span>
+              <button 
+                onClick={() => cambiarPagina(paginaActual + 1)} 
+                disabled={paginaActual === totalPaginas}
+                className={styles.pageBtn}
+              >
+                Siguiente
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <BurbujaVozIA />

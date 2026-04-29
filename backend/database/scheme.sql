@@ -39,7 +39,7 @@ CREATE TABLE direcciones (
     id_cliente INT UNSIGNED NOT NULL COMMENT 'Cliente propietario de la dirección',
     numero VARCHAR(20) NOT NULL COMMENT 'Número de la dirección',
     calle VARCHAR(120) NOT NULL COMMENT 'Calle de la dirección',
-    comuna VARCHAR(120) NOT NULL COMMENT 'Comuna de la dirección',
+    barrio VARCHAR(120) NOT NULL COMMENT 'Barrio de la dirección',
     ciudad VARCHAR(120) NOT NULL COMMENT 'Ciudad de la dirección',
     CONSTRAINT fk_direcciones_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON UPDATE CASCADE ON DELETE CASCADE,
     -- Permite asegurar que el par (id_direccion, id_cliente) sea referenciable

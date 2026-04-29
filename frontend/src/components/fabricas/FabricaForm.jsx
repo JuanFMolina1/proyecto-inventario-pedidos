@@ -2,13 +2,12 @@ import { useState } from 'react'
 import styles from '../../styles/Form.module.css'
 
 function FabricaForm({ onCrear }) {
-  const [numero, setNumero] = useState('')
   const [telefono, setTelefono] = useState('')
 
   async function manejarSubmit(evento) {
     evento.preventDefault()
-    await onCrear({ numero: numero.trim(), telefono: telefono.trim() })
-    setNumero('')
+    // Solo se envía el teléfono, el número se asigna automáticamente
+    await onCrear({ telefono: telefono.trim() })
     setTelefono('')
   }
 
@@ -17,12 +16,13 @@ function FabricaForm({ onCrear }) {
       <h3>Crear Fabrica</h3>
       <div className={styles.grid2}>
         <label>
-          Numero
-          <input value={numero} onChange={(e) => setNumero(e.target.value)} required />
-        </label>
-        <label>
-          Telefono
-          <input value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
+          Teléfono
+          <input 
+            value={telefono} 
+            onChange={(e) => setTelefono(e.target.value)} 
+            placeholder="+57 300 123 4567"
+            required 
+          />
         </label>
       </div>
       <button className={styles.primaryBtn} type="submit">

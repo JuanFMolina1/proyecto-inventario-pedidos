@@ -15,7 +15,7 @@ function Direcciones() {
     id_cliente: '',
     numero: '',
     calle: '',
-    comuna: '',
+    barrio: '',
     ciudad: '',
   })
 
@@ -46,7 +46,7 @@ function Direcciones() {
     setError('')
     setMensaje('')
 
-    if (!formulario.id_cliente || !formulario.numero || !formulario.calle || !formulario.comuna || !formulario.ciudad) {
+    if (!formulario.id_cliente || !formulario.numero || !formulario.calle || !formulario.barrio || !formulario.ciudad) {
       setError('Todos los campos son requeridos.')
       return
     }
@@ -57,7 +57,7 @@ function Direcciones() {
         id_cliente: Number(formulario.id_cliente),
         numero: formulario.numero.trim(),
         calle: formulario.calle.trim(),
-        comuna: formulario.comuna.trim(),
+        barrio: formulario.barrio.trim(),
         ciudad: formulario.ciudad.trim(),
       })
       setMensaje('Dirección creada correctamente.')
@@ -65,7 +65,7 @@ function Direcciones() {
         id_cliente: '',
         numero: '',
         calle: '',
-        comuna: '',
+        barrio: '',
         ciudad: '',
       })
       await cargarDirecciones()
@@ -87,7 +87,12 @@ function Direcciones() {
       setMensaje('Dirección eliminada correctamente.')
       await cargarDirecciones()
     } catch (err) {
-      setError(err.message || 'No fue posible eliminar la dirección.')
+      // El error de foreign key significa que hay pedidos asociados
+      if (err.message.includes('foreign key constraint')) {
+        setError('No se puede eliminar: hay pedidos asociados a esta dirección.')
+      } else {
+        setError(err.message || 'No fue posible eliminar la dirección.')
+      }
     }
   }
 
@@ -133,13 +138,13 @@ function Direcciones() {
             />
           </label>
           <label>
-            Comuna
+            Barrio
             <input
-              name="comuna"
+              name="barrio"
               type="text"
-              value={formulario.comuna}
+              value={formulario.barrio}
               onChange={actualizarCampo}
-              placeholder="Santiago"
+              placeholder="Santa Fe"
               required
             />
           </label>
@@ -174,7 +179,7 @@ function Direcciones() {
                   <th>ID</th>
                   <th>Cliente</th>
                   <th>Dirección</th>
-                  <th>Comuna</th>
+                  <th>Barrio</th>
                   <th>Ciudad</th>
                   <th>Acción</th>
                 </tr>
@@ -185,7 +190,7 @@ function Direcciones() {
                     <td>{dir.id}</td>
                     <td>{dir.id_cliente}</td>
                     <td>{dir.calle} {dir.numero}</td>
-                    <td>{dir.comuna}</td>
+                    <td>{dir.barrio}</td>
                     <td>{dir.ciudad}</td>
                     <td>
                       <button

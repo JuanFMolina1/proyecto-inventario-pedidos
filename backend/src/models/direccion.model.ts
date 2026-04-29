@@ -6,7 +6,7 @@ export interface Direccion {
   id_cliente: number;
   numero: string;
   calle: string;
-  comuna: string;
+  barrio: string;
   ciudad: string;
 }
 
@@ -34,16 +34,16 @@ export class DireccionModel {
 
   static async create(direccion: Direccion): Promise<number> {
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO direcciones (id_cliente, numero, calle, comuna, ciudad) VALUES (?, ?, ?, ?, ?)',
-      [direccion.id_cliente, direccion.numero, direccion.calle, direccion.comuna, direccion.ciudad]
+      'INSERT INTO direcciones (id_cliente, numero, calle, barrio, ciudad) VALUES (?, ?, ?, ?, ?)',
+      [direccion.id_cliente, direccion.numero, direccion.calle, direccion.barrio, direccion.ciudad]
     );
     return result.insertId;
   }
 
   static async update(id: number, direccion: Partial<Direccion>): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
-      'UPDATE direcciones SET id_cliente = ?, numero = ?, calle = ?, comuna = ?, ciudad = ? WHERE id_direccion = ?',
-      [direccion.id_cliente, direccion.numero, direccion.calle, direccion.comuna, direccion.ciudad, id]
+      'UPDATE direcciones SET id_cliente = ?, numero = ?, calle = ?, barrio = ?, ciudad = ? WHERE id_direccion = ?',
+      [direccion.id_cliente, direccion.numero, direccion.calle, direccion.barrio, direccion.ciudad, id]
     );
     return result.affectedRows > 0;
   }
