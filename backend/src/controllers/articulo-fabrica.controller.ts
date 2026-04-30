@@ -62,8 +62,11 @@ export class ArticuloFabricaController {
     try {
       const idArticulo = parseIntParam(req.params.idArticulo);
       const idFabrica = parseIntParam(req.params.idFabrica);
-      const { existencias } = req.body;
-      const success = await articuloFabricaService.updateArticuloFabrica(idArticulo, idFabrica, existencias);
+      const cambios = {
+        existencias: req.body.existencias !== undefined ? Number(req.body.existencias) : undefined,
+        precio: req.body.precio !== undefined ? Number(req.body.precio) : undefined,
+      };
+      const success = await articuloFabricaService.updateArticuloFabrica(idArticulo, idFabrica, cambios);
       if (!success) {
         res.status(404).json({ error: 'Relación artículo-fábrica no encontrada' });
         return;

@@ -40,8 +40,8 @@ export class PedidoController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const id = await pedidoService.createPedido(req.body);
-      res.status(201).json({ id, message: 'Pedido creado exitosamente' });
+      const result = await pedidoService.createPedido(req.body);
+      res.status(201).json({ ...result, message: 'Pedido creado exitosamente' });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

@@ -53,6 +53,7 @@ backend/
 **Ejemplo de body para crear/actualizar:**
 ```json
 {
+  "nombre": "Cliente Juan Pérez",
   "saldo": 0,
   "limite_credito": 1500000,
   "descuento": 5.5
@@ -69,7 +70,11 @@ backend/
 **Ejemplo de body:**
 ```json
 {
-  "descripcion": "Laptop Dell XPS 15"
+  "nombre": "Laptop Dell XPS 15",
+  "descripcion": "Laptop Dell XPS 15",
+  "id_fabrica": 1,
+  "existencias": 25,
+  "precio": 4250000
 }
 ```
 
@@ -83,6 +88,7 @@ backend/
 **Ejemplo de body:**
 ```json
 {
+  "nombre": "Fábrica Centro",
   "telefono": "+56912345678"
 }
 ```
@@ -101,7 +107,7 @@ backend/
   "id_cliente": 1,
   "numero": "123",
   "calle": "Avenida Libertador",
-  "comuna": "Las Condes",
+  "barrio": "Las Condes",
   "ciudad": "Santiago"
 }
 ```
@@ -120,14 +126,16 @@ backend/
 {
   "id_articulo": 1,
   "id_fabrica": 1,
-  "existencias": 100
+  "existencias": 100,
+  "precio": 399990
 }
 ```
 
 **Ejemplo de body para actualizar:**
 ```json
 {
-  "existencias": 150
+  "existencias": 150,
+  "precio": 389990
 }
 ```
 
@@ -159,9 +167,20 @@ backend/
 {
   "id_cliente": 1,
   "id_direccion": 1,
-  "fecha_hora": "2026-04-27T20:00:00"
+  "fecha_hora": "2026-04-27T20:00:00",
+  "items": [
+    {
+      "id": 1,
+      "cantidad": 2
+    }
+  ]
 }
 ```
+
+Al crear un pedido, el sistema:
+- descuenta el stock de los artículos
+- actualiza el saldo del cliente
+- valida que el saldo del cliente alcance para cubrir el total del pedido
 
 ### 8. Detalle de Pedidos
 - `GET /api/detalle-pedido` - Obtener todos los detalles

@@ -23,7 +23,32 @@ function Pedidos() {
   const [cantidad, setCantidad] = useState(1)
   const [items, setItems] = useState([])
 
-  const fechaActual = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  function obtenerFechaHoy() {
+    const hoy = new Date()
+    const offset = hoy.getTimezoneOffset() * 60000
+    return new Date(hoy.getTime() - offset).toISOString().slice(0, 10)
+  }
+
+  const [fechaPedido, setFechaPedido] = useState(() => obtenerFechaHoy())
+  const clienteSeleccionado = useMemo(
+    () => clientes.find((cliente) => cliente.id === Number(clienteId)) || null,
+    [clientes, clienteId],
+  )
+  const subtotalPedido = useMemo(
+    () =>
+      items.reduce(
+        (total, item) => total + Number(item.precio || 0) * Number(item.cantidad || 0),
+        0,
+      ),
+    [items],
+  )
+  const descuentoMonto = useMemo(() => {
+    if (!clienteSeleccionado) return 0
+    return subtotalPedido * (Number(clienteSeleccionado.descuento || 0) / 100)
+  }, [clienteSeleccionado, subtotalPedido])
+  const totalPedido = subtotalPedido - descuentoMonto
+  const saldoDisponible = clienteSeleccionado ? Number(clienteSeleccionado.saldo || 0) : 0
+  const excedeSaldo = clienteSeleccionado ? totalPedido > saldoDisponible : false
 
   useEffect(() => {
     cargarDatos()
@@ -100,17 +125,32 @@ function Pedidos() {
       return
     }
 
+    const cantidadSolicitada = Number(cantidad)
+    const cantidadEnCarrito = items.find((item) => item.id === articulo.id)?.cantidad || 0
+    if (Number.isFinite(Number(articulo.stock)) && cantidadSolicitada + cantidadEnCarrito > Number(articulo.stock)) {
+      setError('La cantidad solicitada supera el stock disponible del artículo.')
+      return
+    }
+
     setError('')
     setItems((previo) => {
       const existente = previo.find((item) => item.id === articulo.id)
       if (existente) {
         return previo.map((item) =>
           item.id === articulo.id
-            ? { ...item, cantidad: item.cantidad + Number(cantidad) }
+            ? { ...item, cantidad: item.cantidad + cantidadSolicitada }
             : item,
         )
       }
-      return [...previo, { id: articulo.id, nombre: articulo.nombre, cantidad: Number(cantidad) }]
+      return [
+        ...previo,
+        {
+          id: articulo.id,
+          nombre: articulo.nombre,
+          cantidad: cantidadSolicitada,
+          precio: Number(articulo.precio || 0),
+        },
+      ]
     })
     setArticuloId('')
     setCantidad(1)
@@ -126,19 +166,30 @@ function Pedidos() {
       return
     }
 
+    if (excedeSaldo) {
+      setError('El saldo del cliente no es suficiente para cubrir el pedido.')
+      return
+    }
+
     try {
       setError('')
       setMensaje('')
       const nuevoPedido = await createPedido({
         clienteId,
         direccionId,
-        fecha: fechaActual,
+        fecha: fechaPedido,
         items,
       })
-      setMensaje(`Pedido ${nuevoPedido.id} creado correctamente.`)
+      setMensaje(
+        `Pedido ${nuevoPedido.id} creado correctamente. Total: ${Number(nuevoPedido.total || 0).toLocaleString('es-CO', {
+          style: 'currency',
+          currency: 'COP',
+        })}`,
+      )
       setItems([])
       setClienteId('')
       setDireccionId('')
+      setFechaPedido(obtenerFechaHoy())
     } catch (err) {
       setError(err.message || 'No fue posible crear el pedido.')
     }
@@ -183,7 +234,7 @@ function Pedidos() {
 
           <label>
             Fecha
-            <input value={fechaActual} readOnly />
+            <input type="date" value={fechaPedido} onChange={(e) => setFechaPedido(e.target.value)} />
           </label>
         </div>
       </div>
@@ -218,7 +269,29 @@ function Pedidos() {
           </button>
         </div>
         <CarritoPedido items={items} onEliminar={eliminarArticulo} />
-        <button className={pageStyles.primaryBtn} onClick={crearPedidoActual}>
+        <div className={formStyles.card}>
+          <h4>Resumen del pedido</h4>
+          <p>Subtotal: {subtotalPedido.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</p>
+          <p>
+            Descuento cliente ({clienteSeleccionado ? `${clienteSeleccionado.descuento}%` : '0%'}):{' '}
+            {descuentoMonto.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}
+          </p>
+          <p>
+            Total: {totalPedido.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}
+          </p>
+          <p>
+            Saldo cliente:{' '}
+            {Number(clienteSeleccionado?.saldo || 0).toLocaleString('es-CO', {
+              style: 'currency',
+              currency: 'COP',
+            })}
+          </p>
+        </div>
+        <button
+          className={pageStyles.primaryBtn}
+          onClick={crearPedidoActual}
+          disabled={!clienteId || !direccionId || items.length === 0 || excedeSaldo}
+        >
           Crear Pedido
         </button>
       </div>

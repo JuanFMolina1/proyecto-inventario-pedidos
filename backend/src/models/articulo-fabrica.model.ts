@@ -5,6 +5,7 @@ export interface ArticuloFabrica {
   id_articulo: number;
   id_fabrica: number;
   existencias: number;
+  precio: number;
 }
 
 export class ArticuloFabricaModel {
@@ -39,16 +40,44 @@ export class ArticuloFabricaModel {
 
   static async create(articuloFabrica: ArticuloFabrica): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO articulo_fabrica (id_articulo, id_fabrica, existencias) VALUES (?, ?, ?)',
-      [articuloFabrica.id_articulo, articuloFabrica.id_fabrica, articuloFabrica.existencias]
+      'INSERT INTO articulo_fabrica (id_articulo, id_fabrica, existencias, precio) VALUES (?, ?, ?, ?)',
+      [
+        articuloFabrica.id_articulo,
+        articuloFabrica.id_fabrica,
+        articuloFabrica.existencias,
+        articuloFabrica.precio,
+      ]
     );
     return result.affectedRows > 0;
   }
 
-  static async update(idArticulo: number, idFabrica: number, existencias: number): Promise<boolean> {
+  static async update(
+    idArticulo: number,
+    idFabrica: number,
+    cambios: { existencias?: number; precio?: number }
+  ): Promise<boolean> {
+    const campos: string[] = [];
+    const valores: Array<number> = [];
+
+    if (cambios.existencias !== undefined) {
+      campos.push('existencias = ?');
+      valores.push(cambios.existencias);
+    }
+
+    if (cambios.precio !== undefined) {
+      campos.push('precio = ?');
+      valores.push(cambios.precio);
+    }
+
+    if (campos.length === 0) {
+      return false;
+    }
+
+    valores.push(idArticulo, idFabrica);
+
     const [result] = await pool.query<ResultSetHeader>(
-      'UPDATE articulo_fabrica SET existencias = ? WHERE id_articulo = ? AND id_fabrica = ?',
-      [existencias, idArticulo, idFabrica]
+      `UPDATE articulo_fabrica SET ${campos.join(', ')} WHERE id_articulo = ? AND id_fabrica = ?`,
+      valores
     );
     return result.affectedRows > 0;
   }

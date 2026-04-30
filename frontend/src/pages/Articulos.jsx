@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react'
 import ArticuloForm from '../components/articulos/ArticuloForm'
 import ArticulosList from '../components/articulos/ArticulosList'
-import { createArticulo, getArticulos } from '../services/api'
+import { createArticulo, getArticulos, getFabricas } from '../services/api'
 import pageStyles from '../styles/Page.module.css'
 
 function Articulos() {
   const [articulos, setArticulos] = useState([])
+  const [fabricas, setFabricas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [creando, setCreando] = useState(false)
 
   useEffect(() => {
-    cargarArticulos()
+    cargarDatos()
   }, [])
 
-  async function cargarArticulos() {
+  async function cargarDatos() {
     try {
       setLoading(true)
       setError('')
-      const data = await getArticulos()
-      setArticulos(data)
+      const [articulosData, fabricasData] = await Promise.all([getArticulos(), getFabricas()])
+      setArticulos(articulosData)
+      setFabricas(fabricasData)
     } catch (err) {
       setError(err.message || 'No fue posible cargar articulos.')
     } finally {
@@ -28,17 +31,20 @@ function Articulos() {
 
   async function manejarCrear(articuloNuevo) {
     try {
+      setCreando(true)
       setError('')
       await createArticulo(articuloNuevo)
-      await cargarArticulos()
+      await cargarDatos()
     } catch (err) {
       setError(err.message || 'No fue posible crear articulo.')
+    } finally {
+      setCreando(false)
     }
   }
 
   return (
     <section className={pageStyles.page}>
-      <ArticuloForm onCrear={manejarCrear} />
+      <ArticuloForm onCrear={manejarCrear} fabricas={fabricas} creando={creando} />
       {error ? <p className={pageStyles.error}>{error}</p> : null}
       {loading ? <p className={pageStyles.muted}>Cargando articulos...</p> : <ArticulosList articulos={articulos} />}
     </section>

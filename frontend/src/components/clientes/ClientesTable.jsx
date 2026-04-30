@@ -6,6 +6,7 @@ function ClientesTable({ clientes }) {
       <table className={styles.table}>
         <thead>
           <tr>
+            <th>Nombre</th>
             <th>Numero de cliente</th>
             <th>Saldo</th>
             <th>Limite de credito</th>
@@ -15,6 +16,7 @@ function ClientesTable({ clientes }) {
         <tbody>
           {clientes.map((cliente) => (
             <tr key={cliente.id}>
+              <td>{cliente.nombre}</td>
               <td>{cliente.numeroCliente}</td>
               <td>${cliente.saldo.toLocaleString('es-CO')}</td>
               <td>${cliente.limiteCredito.toLocaleString('es-CO')}</td>

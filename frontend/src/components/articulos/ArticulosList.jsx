@@ -8,6 +8,9 @@ function ArticulosList({ articulos }) {
           <tr>
             <th>Nombre</th>
             <th>Descripcion</th>
+            <th>Fabrica</th>
+            <th>Stock</th>
+            <th>Precio</th>
           </tr>
         </thead>
         <tbody>
@@ -15,6 +18,9 @@ function ArticulosList({ articulos }) {
             <tr key={articulo.id}>
               <td>{articulo.nombre}</td>
               <td>{articulo.descripcion}</td>
+              <td>{articulo.fabricas || '-'}</td>
+              <td>{Number(articulo.stock || 0).toLocaleString('es-CO')}</td>
+              <td>{articulo.precio.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</td>
             </tr>
           ))}
         </tbody>

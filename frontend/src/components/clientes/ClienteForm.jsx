@@ -2,6 +2,7 @@ import { useState } from 'react'
 import styles from '../../styles/Form.module.css'
 
 const estadoInicial = {
+  nombre: '',
   saldo: '',
   limiteCredito: '',
   descuento: '',
@@ -26,6 +27,7 @@ function ClienteForm({ onCrear, creando }) {
     }
 
     await onCrear({
+      nombre: formulario.nombre.trim(),
       saldo: Number(formulario.saldo),
       limiteCredito: Number(formulario.limiteCredito),
       descuento: Number(formulario.descuento),
@@ -38,6 +40,10 @@ function ClienteForm({ onCrear, creando }) {
     <form className={styles.card} onSubmit={manejarSubmit}>
       <h3>Crear Cliente</h3>
       <div className={styles.grid2}>
+        <label>
+          Nombre
+          <input name="nombre" type="text" value={formulario.nombre} onChange={actualizarCampo} required />
+        </label>
         <label>
           Saldo
           <input name="saldo" type="number" value={formulario.saldo} onChange={actualizarCampo} required />

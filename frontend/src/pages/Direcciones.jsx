@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getDirecciones, createDireccion, deleteDireccion } from '../services/api'
+import { getClientes, getDirecciones, createDireccion, deleteDireccion } from '../services/api'
 import pageStyles from '../styles/Page.module.css'
 import formStyles from '../styles/Form.module.css'
 import tableStyles from '../styles/Table.module.css'
@@ -10,6 +10,7 @@ function Direcciones() {
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [creando, setCreando] = useState(false)
+  const [clientes, setClientes] = useState([])
 
   const [formulario, setFormulario] = useState({
     id_cliente: '',
@@ -20,15 +21,16 @@ function Direcciones() {
   })
 
   useEffect(() => {
-    cargarDirecciones()
+    cargarDatos()
   }, [])
 
-  async function cargarDirecciones() {
+  async function cargarDatos() {
     try {
       setLoading(true)
       setError('')
-      const data = await getDirecciones()
-      setDirecciones(data)
+      const [direccionesData, clientesData] = await Promise.all([getDirecciones(), getClientes()])
+      setDirecciones(direccionesData)
+      setClientes(clientesData)
     } catch (err) {
       setError(err.message || 'No fue posible cargar las direcciones.')
     } finally {
@@ -68,7 +70,7 @@ function Direcciones() {
         barrio: '',
         ciudad: '',
       })
-      await cargarDirecciones()
+      await cargarDatos()
     } catch (err) {
       setError(err.message || 'No fue posible crear la dirección.')
     } finally {
@@ -85,7 +87,7 @@ function Direcciones() {
       setError('')
       await deleteDireccion(id)
       setMensaje('Dirección eliminada correctamente.')
-      await cargarDirecciones()
+      await cargarDatos()
     } catch (err) {
       // El error de foreign key significa que hay pedidos asociados
       if (err.message.includes('foreign key constraint')) {
@@ -106,14 +108,21 @@ function Direcciones() {
         <h3>Crear Dirección</h3>
         <div className={formStyles.grid2}>
           <label>
-            ID Cliente
-            <input
+            Cliente
+            <select
               name="id_cliente"
-              type="number"
               value={formulario.id_cliente}
               onChange={actualizarCampo}
+              disabled={clientes.length === 0}
               required
-            />
+            >
+              <option value="">Selecciona cliente</option>
+              {clientes.map((cliente) => (
+                <option key={cliente.id} value={cliente.id}>
+                  {cliente.id} - {cliente.nombre}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Número
@@ -188,7 +197,10 @@ function Direcciones() {
                 {direcciones.map((dir) => (
                   <tr key={dir.id}>
                     <td>{dir.id}</td>
-                    <td>{dir.id_cliente}</td>
+                    <td>
+                      {dir.id_cliente} -{' '}
+                      {clientes.find((cliente) => cliente.id === dir.id_cliente)?.nombre ?? `Cliente ${dir.id_cliente}`}
+                    </td>
                     <td>{dir.calle} {dir.numero}</td>
                     <td>{dir.barrio}</td>
                     <td>{dir.ciudad}</td>

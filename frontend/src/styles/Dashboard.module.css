@@ -229,8 +229,17 @@
 }
 
 .metricCard span {
-  color: #208a54;
+  color: #6b7a99;
   font-size: 0.85rem;
+}
+
+.orderItems {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #21345c;
 }
 
 .contentGrid {

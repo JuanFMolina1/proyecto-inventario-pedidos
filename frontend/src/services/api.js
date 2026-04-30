@@ -13,7 +13,7 @@ function mapCliente(cliente) {
   return {
     id: Number(cliente.id_cliente),
     numeroCliente: String(cliente.id_cliente),
-    nombre: `Cliente ${cliente.id_cliente}`,
+    nombre: cliente.nombre ?? `Cliente ${cliente.id_cliente}`,
     saldo: Number(cliente.saldo),
     limiteCredito: Number(cliente.limite_credito),
     descuento: Number(cliente.descuento),
@@ -23,8 +23,11 @@ function mapCliente(cliente) {
 function mapArticulo(articulo) {
   return {
     id: Number(articulo.id_articulo),
-    nombre: articulo.descripcion,
-    descripcion: articulo.descripcion,
+    nombre: articulo.nombre ?? articulo.descripcion ?? '',
+    descripcion: articulo.descripcion ?? '',
+    precio: Number(articulo.precio || 0),
+    stock: Number(articulo.stock || 0),
+    fabricas: articulo.fabricas ?? '',
   }
 }
 
@@ -32,6 +35,7 @@ function mapFabrica(fabrica, stockPorFabrica) {
   return {
     id: Number(fabrica.id_fabrica),
     numero: String(fabrica.id_fabrica),
+    nombre: fabrica.nombre ?? `Fabrica ${fabrica.id_fabrica}`,
     telefono: fabrica.telefono,
     stock: Number(stockPorFabrica[fabrica.id_fabrica] || 0),
   }
@@ -49,6 +53,7 @@ export async function getClientes() {
 export async function createCliente(clienteNuevo) {
   try {
     const payload = {
+      nombre: clienteNuevo.nombre?.trim(),
       saldo: Number(clienteNuevo.saldo),
       limite_credito: Number(clienteNuevo.limiteCredito),
       descuento: Number(clienteNuevo.descuento),
@@ -72,10 +77,15 @@ export async function getArticulos() {
 
 export async function createArticulo(articuloNuevo) {
   try {
-    // El backend solo espera 'descripcion', no 'nombre'
-    const descripcion = articuloNuevo.descripcion?.trim() || articuloNuevo.nombre?.trim()
-    console.log('[API] createArticulo payload:', { descripcion })
-    const { data } = await api.post('/articulos', { descripcion })
+    const payload = {
+      nombre: articuloNuevo.nombre?.trim(),
+      descripcion: articuloNuevo.descripcion?.trim(),
+      id_fabrica: articuloNuevo.id_fabrica ? Number(articuloNuevo.id_fabrica) : undefined,
+      existencias: articuloNuevo.existencias !== undefined ? Number(articuloNuevo.existencias) : undefined,
+      precio: articuloNuevo.precio !== undefined ? Number(articuloNuevo.precio) : undefined,
+    }
+    console.log('[API] createArticulo payload:', payload)
+    const { data } = await api.post('/articulos', payload)
     return data
   } catch (error) {
     throw new Error(getErrorMessage(error, 'No fue posible crear articulo.'))
@@ -102,7 +112,10 @@ export async function getFabricas() {
 
 export async function createFabrica(fabricaNueva) {
   try {
-    const { data } = await api.post('/fabricas', { telefono: fabricaNueva.telefono })
+    const { data } = await api.post('/fabricas', {
+      nombre: fabricaNueva.nombre?.trim(),
+      telefono: fabricaNueva.telefono,
+    })
     return data
   } catch (error) {
     throw new Error(getErrorMessage(error, 'No fue posible crear fabrica.'))
@@ -114,7 +127,7 @@ export async function getDireccionesPorCliente(clienteId) {
     const { data } = await api.get(`/direcciones/cliente/${clienteId}`)
     return data.map((direccion) => ({
       id: Number(direccion.id_direccion),
-      texto: `${direccion.calle} ${direccion.numero}, ${direccion.comuna} - ${direccion.ciudad}`,
+      texto: `${direccion.calle} ${direccion.numero}, ${direccion.barrio} - ${direccion.ciudad}`,
     }))
   } catch (error) {
     throw new Error(getErrorMessage(error, 'No fue posible cargar direcciones.'))
@@ -129,7 +142,7 @@ export async function getDirecciones() {
       id_cliente: Number(direccion.id_cliente),
       numero: direccion.numero,
       calle: direccion.calle,
-      comuna: direccion.comuna,
+      barrio: direccion.barrio,
       ciudad: direccion.ciudad,
     }))
   } catch (error) {
@@ -143,7 +156,7 @@ export async function createDireccion(direccionNueva) {
       id_cliente: Number(direccionNueva.id_cliente),
       numero: direccionNueva.numero,
       calle: direccionNueva.calle,
-      comuna: direccionNueva.comuna,
+      barrio: direccionNueva.barrio,
       ciudad: direccionNueva.ciudad,
     }
     console.log('[API] createDireccion payload:', payload)
@@ -165,16 +178,28 @@ export async function deleteDireccion(id) {
 
 export async function getPedidos() {
   try {
-    const [pedidosResp, detallesResp] = await Promise.all([
+    const [pedidosResp, detallesResp, articulosResp] = await Promise.all([
       api.get('/pedidos'),
       api.get('/detalle-pedido'),
+      api.get('/articulos'),
     ])
+
+    const articulosPorId = articulosResp.data.reduce((acc, articulo) => {
+      acc[Number(articulo.id_articulo)] = {
+        nombre: articulo.nombre ?? articulo.descripcion ?? '',
+        precio: Number(articulo.precio || 0),
+      }
+      return acc
+    }, {})
 
     const detallesPorPedido = detallesResp.data.reduce((acc, detalle) => {
       const key = Number(detalle.id_pedido)
       if (!acc[key]) acc[key] = []
+      const articulo = articulosPorId[Number(detalle.id_articulo)] || {}
       acc[key].push({
         articuloId: Number(detalle.id_articulo),
+        articuloNombre: articulo.nombre ?? `Articulo ${detalle.id_articulo}`,
+        precioUnitario: Number(articulo.precio || 0),
         cantidad: Number(detalle.cantidad),
       })
       return acc
@@ -198,23 +223,15 @@ export async function createPedido(pedidoNuevo) {
       id_cliente: Number(pedidoNuevo.clienteId),
       id_direccion: Number(pedidoNuevo.direccionId),
       fecha_hora: pedidoNuevo.fecha,
+      items: pedidoNuevo.items.map((item) => ({
+        id: Number(item.id),
+        cantidad: Number(item.cantidad),
+      })),
     }
     console.log('[API] createPedido payload:', pedidoPayload)
 
-    const pedidoResp = await api.post('/pedidos', pedidoPayload)
-    const idPedido = Number(pedidoResp.data.id)
-
-    console.log('[API] Creating detalles for pedido:', idPedido)
-    const detalles = pedidoNuevo.items.map((item) =>
-      api.post('/detalle-pedido', {
-        id_pedido: idPedido,
-        id_articulo: Number(item.id),
-        cantidad: Number(item.cantidad),
-      }),
-    )
-    await Promise.all(detalles)
-
-    return { id: idPedido }
+    const { data } = await api.post('/pedidos', pedidoPayload)
+    return data
   } catch (error) {
     throw new Error(getErrorMessage(error, 'No fue posible crear el pedido.'))
   }

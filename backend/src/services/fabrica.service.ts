@@ -10,6 +10,9 @@ export class FabricaService {
   }
 
   async createFabrica(fabrica: Fabrica): Promise<number> {
+    if (!fabrica.nombre || fabrica.nombre.trim() === '') {
+      throw new Error('El nombre de la fábrica es requerido');
+    }
     if (!fabrica.telefono || fabrica.telefono.trim() === '') {
       throw new Error('El teléfono de la fábrica es requerido');
     }
@@ -17,6 +20,9 @@ export class FabricaService {
   }
 
   async updateFabrica(id: number, fabrica: Partial<Fabrica>): Promise<boolean> {
+    if (fabrica.nombre !== undefined && fabrica.nombre.trim() === '') {
+      throw new Error('El nombre de la fábrica no puede estar vacío');
+    }
     if (fabrica.telefono !== undefined && fabrica.telefono.trim() === '') {
       throw new Error('El teléfono de la fábrica no puede estar vacío');
     }

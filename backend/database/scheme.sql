@@ -10,6 +10,7 @@
 -- ==========================================================
 CREATE TABLE clientes (
     id_cliente INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único del cliente',
+    nombre VARCHAR(255) NOT NULL COMMENT 'Nombre del cliente',
     saldo DECIMAL(15, 2) NOT NULL DEFAULT 0.00 COMMENT 'Saldo actual del cliente',
     limite_credito DECIMAL(15, 2) NOT NULL COMMENT 'Límite de crédito autorizado',
     descuento DECIMAL(5, 2) NOT NULL DEFAULT 0.00 COMMENT 'Porcentaje de descuento del cliente',
@@ -23,11 +24,13 @@ CREATE TABLE clientes (
 
 CREATE TABLE articulos (
     id_articulo INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único del artículo',
+    nombre VARCHAR(255) NOT NULL COMMENT 'Nombre del artículo',
     descripcion VARCHAR(255) NOT NULL COMMENT 'Descripción del artículo'
 ) ENGINE = InnoDB COMMENT = 'Catálogo de artículos comercializados';
 
 CREATE TABLE fabricas (
     id_fabrica INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único de la fábrica',
+    nombre VARCHAR(255) NOT NULL COMMENT 'Nombre de la fábrica',
     telefono VARCHAR(20) NOT NULL COMMENT 'Teléfono de contacto de la fábrica'
 ) ENGINE = InnoDB COMMENT = 'Fábricas proveedoras de artículos';
 
@@ -51,10 +54,12 @@ CREATE TABLE articulo_fabrica (
     id_articulo INT UNSIGNED NOT NULL COMMENT 'Artículo producido/suministrado',
     id_fabrica INT UNSIGNED NOT NULL COMMENT 'Fábrica que produce/suministra el artículo',
     existencias INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Stock disponible del artículo en la fábrica',
+    precio DECIMAL(15, 2) NOT NULL DEFAULT 0.00 COMMENT 'Precio del artículo en la fábrica',
     PRIMARY KEY (id_articulo, id_fabrica),
     CONSTRAINT fk_articulo_fabrica_articulo FOREIGN KEY (id_articulo) REFERENCES articulos(id_articulo) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_articulo_fabrica_fabrica FOREIGN KEY (id_fabrica) REFERENCES fabricas(id_fabrica) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT chk_articulo_fabrica_existencias CHECK (existencias >= 0),
+    CONSTRAINT chk_articulo_fabrica_precio CHECK (precio >= 0),
     INDEX idx_articulo_fabrica_fabrica (id_fabrica)
 ) ENGINE = InnoDB COMMENT = 'Relación N:M entre artículos y fábricas, con stock por fábrica';
 

@@ -4,25 +4,38 @@ import BurbujaVozIA from '../components/dashboard/BurbujaVozIA'
 import OrdersByDayChart from '../components/dashboard/OrdersByDayChart'
 import TopProductsChart from '../components/dashboard/TopProductsChart'
 import TopClientsChart from '../components/dashboard/TopClientsChart'
-import { getPedidos } from '../services/api'
-
-const metricas = [
-  { etiqueta: 'Pedidos hoy', valor: '128', variacion: '+18%' },
-  { etiqueta: 'Clientes activos', valor: '74', variacion: '+6%' },
-  { etiqueta: 'Articulos rotando', valor: '312', variacion: '+12%' },
-  { etiqueta: 'Fabricas en linea', valor: '15', variacion: '+2%' },
-]
+import { getArticulos, getFabricas, getPedidos } from '../services/api'
 
 const PEDIDOS_POR_PAGINA = 10
 
+function formatearFechaInput(fecha) {
+  const offset = fecha.getTimezoneOffset() * 60000
+  return new Date(fecha.getTime() - offset).toISOString().slice(0, 10)
+}
+
+function obtenerRangoPorDefecto() {
+  const hoy = new Date()
+  const hace30Dias = new Date()
+  hace30Dias.setDate(hoy.getDate() - 29)
+
+  return {
+    desde: formatearFechaInput(hace30Dias),
+    hasta: formatearFechaInput(hoy),
+  }
+}
+
 function Dashboard() {
-  const [rangoFechas, setRangoFechas] = useState({
-    desde: '2026-04-20',
-    hasta: '2026-04-28',
-  })
+  const [rangoFechas, setRangoFechas] = useState(() => obtenerRangoPorDefecto())
   const [refreshTick, setRefreshTick] = useState(0)
   const [pedidos, setPedidos] = useState([])
   const [loadingPedidos, setLoadingPedidos] = useState(true)
+  const [loadingResumen, setLoadingResumen] = useState(true)
+  const [resumen, setResumen] = useState([
+    { etiqueta: 'Pedidos en rango', valor: '0', detalle: 'Cargando datos...' },
+    { etiqueta: 'Clientes activos', valor: '0', detalle: 'Cargando datos...' },
+    { etiqueta: 'Articulos vendidos', valor: '0', detalle: 'Cargando datos...' },
+    { etiqueta: 'Fabricas con stock', valor: '0', detalle: 'Cargando datos...' },
+  ])
   const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
@@ -34,20 +47,95 @@ function Dashboard() {
   }, [])
 
   useEffect(() => {
-    cargarPedidos()
+    let activo = true
+
+    async function cargar() {
+      try {
+        setLoadingPedidos(true)
+        const data = await getPedidos()
+        if (activo) setPedidos(data)
+      } catch (err) {
+        console.error('Error cargando pedidos:', err)
+      } finally {
+        if (activo) setLoadingPedidos(false)
+      }
+    }
+
+    cargar()
+    return () => {
+      activo = false
+    }
   }, [refreshTick])
 
-  async function cargarPedidos() {
-    try {
-      setLoadingPedidos(true)
-      const data = await getPedidos()
-      setPedidos(data)
-    } catch (err) {
-      console.error('Error cargando pedidos:', err)
-    } finally {
-      setLoadingPedidos(false)
+  useEffect(() => {
+    let activo = true
+
+    async function cargar() {
+      try {
+        setLoadingResumen(true)
+        const [pedidosData, fabricasData, articulosData] = await Promise.all([
+          getPedidos(),
+          getFabricas(),
+          getArticulos(),
+        ])
+
+        const pedidosEnRango = pedidosData.filter((pedido) => {
+          const fecha = new Date(pedido.fecha)
+          const desde = rangoFechas.desde ? new Date(rangoFechas.desde) : null
+          const hasta = rangoFechas.hasta ? new Date(rangoFechas.hasta) : null
+          if (desde && fecha < desde) return false
+          if (hasta && fecha > hasta) return false
+          return true
+        })
+
+        const clientesActivos = new Set(pedidosEnRango.map((pedido) => pedido.clienteId)).size
+        const articulosVendidos = pedidosEnRango.reduce(
+          (total, pedido) =>
+            total +
+            (pedido.detalles ?? []).reduce(
+              (subtotal, detalle) => subtotal + Number(detalle.cantidad || 0),
+              0,
+            ),
+          0,
+        )
+        const fabricasConStock = fabricasData.filter((fabrica) => Number(fabrica.stock || 0) > 0).length
+
+        if (!activo) return
+
+        setResumen([
+          {
+            etiqueta: 'Pedidos en rango',
+            valor: String(pedidosEnRango.length),
+            detalle: `Rango ${rangoFechas.desde} a ${rangoFechas.hasta}`,
+          },
+          {
+            etiqueta: 'Clientes activos',
+            valor: String(clientesActivos),
+            detalle: `${clientesActivos} clientes con pedidos reales`,
+          },
+          {
+            etiqueta: 'Articulos vendidos',
+            valor: String(articulosVendidos),
+            detalle: `${articulosData.length} articulos disponibles`,
+          },
+          {
+            etiqueta: 'Fabricas con stock',
+            valor: String(fabricasConStock),
+            detalle: `${fabricasData.length} fabricas registradas`,
+          },
+        ])
+      } catch (err) {
+        console.error('Error cargando resumen del dashboard:', err)
+      } finally {
+        if (activo) setLoadingResumen(false)
+      }
     }
-  }
+
+    cargar()
+    return () => {
+      activo = false
+    }
+  }, [rangoFechas.desde, rangoFechas.hasta, refreshTick])
 
   const totalPaginas = Math.ceil(pedidos.length / PEDIDOS_POR_PAGINA)
   const pedidosPaginados = pedidos.slice(
@@ -74,11 +162,11 @@ function Dashboard() {
       </div>
 
       <div className={styles.metricsGrid}>
-        {metricas.map((item) => (
+        {resumen.map((item) => (
           <article key={item.etiqueta} className={styles.metricCard}>
             <p>{item.etiqueta}</p>
-            <strong>{item.valor}</strong>
-            <span>{item.variacion} vs. semana anterior</span>
+            <strong>{loadingResumen ? '...' : item.valor}</strong>
+            <span>{item.detalle}</span>
           </article>
         ))}
       </div>
@@ -138,7 +226,19 @@ function Dashboard() {
                     <td>Cliente {pedido.clienteId}</td>
                     <td>Dirección {pedido.direccionId}</td>
                     <td>{pedido.fecha}</td>
-                    <td>{pedido.detalles?.length || 0} items</td>
+                    <td>
+                      {pedido.detalles?.length ? (
+                        <ul className={styles.orderItems}>
+                          {pedido.detalles.map((item) => (
+                            <li key={`${pedido.id}-${item.articuloId}`}>
+                              {item.articuloNombre} x{item.cantidad}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className={styles.muted}>Sin items</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

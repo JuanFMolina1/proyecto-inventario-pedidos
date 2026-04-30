@@ -10,6 +10,9 @@ export class ClienteService {
   }
 
   async createCliente(cliente: Cliente): Promise<number> {
+    if (!cliente.nombre || cliente.nombre.trim() === '') {
+      throw new Error('El nombre del cliente es requerido');
+    }
     // Validaciones de negocio
     if (cliente.limite_credito > 3000000) {
       throw new Error('El límite de crédito no puede exceder 3,000,000');
@@ -24,6 +27,9 @@ export class ClienteService {
   }
 
   async updateCliente(id: number, cliente: Partial<Cliente>): Promise<boolean> {
+    if (cliente.nombre !== undefined && cliente.nombre.trim() === '') {
+      throw new Error('El nombre del cliente no puede estar vacío');
+    }
     // Validaciones de negocio
     if (cliente.limite_credito && cliente.limite_credito > 3000000) {
       throw new Error('El límite de crédito no puede exceder 3,000,000');

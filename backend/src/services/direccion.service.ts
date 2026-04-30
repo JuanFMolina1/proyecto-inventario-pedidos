@@ -14,7 +14,7 @@ export class DireccionService {
   }
 
   async createDireccion(direccion: Direccion): Promise<number> {
-    if (!direccion.numero || !direccion.calle || !direccion.comuna || !direccion.ciudad) {
+    if (!direccion.numero || !direccion.calle || !direccion.barrio || !direccion.ciudad) {
       throw new Error('Todos los campos de la dirección son requeridos');
     }
     return await DireccionModel.create(direccion);
