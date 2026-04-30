@@ -9,6 +9,7 @@ import articuloFabricaRoutes from './src/routes/articulo-fabrica.routes';
 import articuloFabricaAlternativaRoutes from './src/routes/articulo-fabrica-alternativa.routes';
 import pedidoRoutes from './src/routes/pedido.routes';
 import detallePedidoRoutes from './src/routes/detalle-pedido.routes';
+import aiRoutes from './src/routes/ai.routes';
 
 const app = express();
 const server = createServer(app);
@@ -31,7 +32,8 @@ app.get('/', (req, res) => {
       articuloFabrica: '/api/articulo-fabrica',
       articuloFabricaAlternativa: '/api/articulo-fabrica-alternativa',
       pedidos: '/api/pedidos',
-      detallePedido: '/api/detalle-pedido'
+      detallePedido: '/api/detalle-pedido',
+      ai: '/api/ai'
     }
   });
 });
@@ -45,6 +47,7 @@ app.use('/api/articulo-fabrica', articuloFabricaRoutes);
 app.use('/api/articulo-fabrica-alternativa', articuloFabricaAlternativaRoutes);
 app.use('/api/pedidos', pedidoRoutes);
 app.use('/api/detalle-pedido', detallePedidoRoutes);
+app.use('/api/ai', aiRoutes);
 
 server.listen(LOCAL_PORT, () => {
   console.log(`Server is running on port http://localhost:${LOCAL_PORT}`);
