@@ -25,6 +25,9 @@ DB_NAME=inventario_db
 
 # API Key de OpenAI
 OPENAI_API_KEY=sk-tu-api-key-aqui
+
+# Modelo opcional para usar con el servicio de IA
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 ### 2. Obtener API Key de OpenAI
@@ -78,6 +81,8 @@ Verifica que el servicio de OpenAI esté operativo.
   "success": true,
   "status": "operational",
   "openai": true,
+  "configured": true,
+  "model": "gpt-4o-mini",
   "timestamp": "2026-04-29T12:00:00.000Z"
 }
 ```
@@ -103,6 +108,7 @@ Content-Type: application/json
   "query": "¿Cuáles son los 5 clientes con mayor límite de crédito?",
   "response": "# Análisis de Clientes con Mayor Límite de Crédito\n\nLos 5 clientes con mayor límite de crédito son:\n\n1. **Juan Pérez** - Límite: $3,000,000.00\n2. **María García** - Límite: $2,800,000.00\n...",
   "sqlQuery": "SELECT nombre, limite_credito FROM clientes ORDER BY limite_credito DESC LIMIT 5",
+  "queryType": "SELECT",
   "data": [
     {
       "nombre": "Juan Pérez",

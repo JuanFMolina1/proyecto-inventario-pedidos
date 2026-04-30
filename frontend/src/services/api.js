@@ -176,6 +176,33 @@ export async function deleteDireccion(id) {
   }
 }
 
+export async function getAiInfo() {
+  try {
+    const { data } = await api.get('/ai/info')
+    return data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, 'No fue posible obtener la información de la IA.'))
+  }
+}
+
+export async function getAiHealth() {
+  try {
+    const { data } = await api.get('/ai/health')
+    return data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, 'No fue posible verificar el estado de la IA.'))
+  }
+}
+
+export async function queryAi(query) {
+  try {
+    const { data } = await api.post('/ai/query', { query })
+    return data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, 'No fue posible ejecutar la consulta de IA.'))
+  }
+}
+
 export async function getPedidos() {
   try {
     const [pedidosResp, detallesResp, articulosResp] = await Promise.all([

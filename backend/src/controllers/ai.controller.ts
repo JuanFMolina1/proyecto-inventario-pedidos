@@ -48,6 +48,7 @@ export const queryAI = async (req: Request, res: Response): Promise<void> => {
       response: result.response,
       sqlQuery: result.sqlQuery,
       data: result.data,
+      queryType: result.queryType,
       timestamp: new Date().toISOString()
     });
     
@@ -74,6 +75,8 @@ export const healthCheck = async (req: Request, res: Response): Promise<void> =>
       success: true,
       status: isConnected ? 'operational' : 'degraded',
       openai: isConnected,
+      configured: Boolean(process.env.OPENAI_API_KEY),
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       timestamp: new Date().toISOString()
     });
     
@@ -125,12 +128,18 @@ export const getInfo = (req: Request, res: Response): void => {
       'Generación automática de SQL',
       'Interpretación inteligente de resultados',
       'Operaciones completas de base de datos (SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP)',
-      'Contexto completo del esquema de base de datos'
+      'Contexto completo del esquema de base de datos',
+      'Validación básica de sentencias múltiples',
+      'Verificación de conexión con OpenAI'
     ],
     security: {
       readOnly: false,
       allowedOperations: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'DROP', 'TRUNCATE'],
       note: 'El modelo tiene acceso completo a la base de datos. Usar con precaución.'
+    },
+    configuration: {
+      configured: Boolean(process.env.OPENAI_API_KEY),
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini'
     }
   });
 };

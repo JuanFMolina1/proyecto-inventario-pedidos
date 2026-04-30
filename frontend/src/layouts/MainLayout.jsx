@@ -8,6 +8,7 @@ const links = [
   { to: '/fabricas', label: 'Fabricas' },
   { to: '/direcciones', label: 'Direcciones' },
   { to: '/pedidos', label: 'Pedidos' },
+  { to: '/ia', label: 'IA' },
 ]
 
 const titulosPorRuta = {
@@ -18,6 +19,7 @@ const titulosPorRuta = {
   '/fabricas': 'Gestion de fabricas',
   '/direcciones': 'Gestion de direcciones',
   '/pedidos': 'Gestion de pedidos',
+  '/ia': 'Inteligencia artificial',
 }
 
 function MainLayout() {
